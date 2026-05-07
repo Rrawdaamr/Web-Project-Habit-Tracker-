@@ -292,5 +292,6 @@ def today_mood():
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))
+    # Render بيستخدم بورت متغير، الكود ده بيقرأه أوتوماتيك
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
