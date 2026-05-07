@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habit Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div>
+        <h1>🌟 Habit Tracker</h1>
+        <p class="today-date" id="today-date"></p>
+      </div>
+      <div class="header-right">
+        <div class="level-badge" id="level-badge">
+          <span id="level-avatar">🌱</span>
+          <span id="level-label">Level 1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- XP BAR -->
+    <div class="xp-bar-wrap">
+      <div class="xp-info">
+        <div class="xp-meta">
+          <span id="xp-label-text">0 XP مجمّعة</span>
+          <span id="xp-next">الهدف: 100 XP</span>
+        </div>
+        <div class="xp-track">
+          <div class="xp-fill" id="xp-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="xp-stats">
+        <div class="xp-stat">
+          <div class="xp-stat-val" id="done-today">0</div>
+          <div class="xp-stat-lbl">اليوم</div>
+        </div>
+        <div class="xp-stat">
+          <div class="xp-stat-val" id="best-streak-val">🔥 0</div>
+          <div class="xp-stat-lbl">أفضل streak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" onclick="switchTab('today', this)" role="tab">
+        <i class="ti ti-list-check"></i> اليوم
+      </button>
+      <button class="tab-btn" onclick="switchTab('progress', this)" role="tab">
+        <i class="ti ti-chart-bar"></i> التقدم
+      </button>
+      <button class="tab-btn" onclick="switchTab('coach', this)" role="tab">
+        <i class="ti ti-brain"></i> تحليل
+      </button>
+      <button class="tab-btn" onclick="switchTab('awards', this)" role="tab">
+        <i class="ti ti-trophy"></i> جوائز
+      </button>
+    </nav>
+
+    <!-- ── TODAY TAB ── -->
+    <section class="tab-section active" id="tab-today">
+      <div id="habits-list" class="habits-list"></div>
+
+      <!-- Add Habit Button -->
+      <button class="add-toggle-btn" id="add-toggle-btn" onclick="toggleAddForm()">
+        <i class="ti ti-plus"></i> إضافة عادة جديدة
+      </button>
+
+      <!-- Add Habit Form -->
+      <div class="add-form" id="add-form" style="display:none">
+        <h3>عادة جديدة</h3>
+        <div class="emoji-picker" id="emoji-picker"></div>
+        <div class="form-row">
+          <input type="text" id="habit-name-input" placeholder="اسم العادة..." />
+          <select id="habit-time-input">
+            <option value="صباحاً">صباحاً</option>
+            <option value="ظهراً">ظهراً</option>
+            <option value="مساءً">مساءً</option>
+            <option value="في أي وقت">في أي وقت</option>
+          </select>
+        </div>
+        <div class="color-picker" id="color-picker"></div>
+        <button class="btn-primary" onclick="addHabit()">
+          <i class="ti ti-check"></i> إضافة
+        </button>
+      </div>
+    </section>
+
+    <!-- ── PROGRESS TAB ── -->
+    <section class="tab-section" id="tab-progress">
+      <!-- Stat Cards -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="s-icon">🔥</div>
+          <div class="s-val" id="stat-streak">—</div>
+          <div class="s-lbl">streak حالي</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-icon">✅</div>
+          <div class="s-val" id="stat-rate">—</div>
+          <div class="s-lbl">معدل الإنجاز</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-icon">⭐</div>
+          <div class="s-val" id="stat-xp">—</div>
+          <div class="s-lbl">XP مجمّعة</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-icon">📅</div>
+          <div class="s-val" id="stat-month">—</div>
+          <div class="s-lbl">أيام هذا الشهر</div>
+        </div>
+      </div>
+
+      <!-- Weekly Bar Chart -->
+      <div class="card">
+        <h3 class="card-title">أداء الأسبوع</h3>
+        <div class="bar-chart" id="week-chart"></div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="card">
+        <h3 class="card-title">Streak Heatmap — آخر 3 أشهر</h3>
+        <div class="heatmap-scroll">
+          <div class="heatmap-grid" id="heatmap"></div>
+        </div>
+        <div class="heatmap-legend">
+          <span>أقل</span>
+          <div class="heat-cell heat-0"></div>
+          <div class="heat-cell heat-1"></div>
+          <div class="heat-cell heat-2"></div>
+          <div class="heat-cell heat-3"></div>
+          <div class="heat-cell heat-4"></div>
+          <span>أكثر</span>
+        </div>
+      </div>
+
+      <!-- Mood Section -->
+      <div class="card">
+        <h3 class="card-title">كيف مزاجك النهارده؟</h3>
+        <div class="mood-row" id="mood-row">
+          <button class="mood-btn" onclick="setMood(this,'😔','حزين')"><span>😔</span><small>حزين</small></button>
+          <button class="mood-btn" onclick="setMood(this,'😐','عادي')"><span>😐</span><small>عادي</small></button>
+          <button class="mood-btn" onclick="setMood(this,'🙂','كويس')"><span>🙂</span><small>كويس</small></button>
+          <button class="mood-btn" onclick="setMood(this,'😊','مبسوط')"><span>😊</span><small>مبسوط</small></button>
+          <button class="mood-btn" onclick="setMood(this,'🤩','رائع')"><span>🤩</span><small>رائع</small></button>
+        </div>
+        <div class="mood-insight" id="mood-insight" style="display:none"></div>
+      </div>
+    </section>
+
+    <!-- ── COACH TAB ── -->
+    <section class="tab-section" id="tab-coach">
+      <div class="card ai-card">
+        <div class="ai-header">
+          <span class="ai-dot"></span>
+          <h3>AI Habit Coach</h3>
+        </div>
+        <div class="ai-bubble" id="ai-bubble">جاري تحليل عاداتك... 🤔</div>
+        <div id="ai-insights"></div>
+      </div>
+
+      <!-- Prediction -->
+      <div class="card">
+        <h3 class="card-title">توقع إنهاء الشهر</h3>
+        <div class="predict-row">
+          <div>
+            <div class="predict-pct" id="predict-pct">—%</div>
+            <div class="predict-sub">احتمال إكمال الشهر بـ 80%+ إنجاز</div>
+          </div>
+          <div class="predict-label" id="predict-label">—</div>
+        </div>
+        <div class="predict-track">
+          <div class="predict-fill" id="predict-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AWARDS TAB ── -->
+    <section class="tab-section" id="tab-awards">
+      <div class="badges-progress">
+        <span>وصلت إلى <strong id="badges-unlocked">3</strong> من 8 badges</span>
+        <div class="badges-track">
+          <div class="badges-fill" id="badges-fill" style="width:37.5%"></div>
+        </div>
+      </div>
+      <div class="badges-grid" id="badges-list"></div>
+    </section>
+
+  </div><!-- .app -->
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
